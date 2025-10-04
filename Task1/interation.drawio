@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2025-09-29T19:19:01.157Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.8 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="QY7rvqlUlwDhfopgBlIr" version="24.4.8" type="device">
+<mxfile host="Electron" modified="2025-10-04T11:01:52.178Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.8 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="m42ZMrmrQbJ7PB7MjSJ7" version="24.4.8" type="device">
   <diagram id="HXWJJRYE7YdIo38HMuu1" name="Страница — 1">
     <mxGraphModel dx="1358" dy="1697" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
@@ -56,7 +56,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="Ri2J7wYNxYh_2fHASqyy-10" value="&lt;span style=&quot;box-sizing: inherit; color: rgba(0, 0, 0, 0.85); text-align: left; white-space-collapse: preserve-breaks; background-color: rgb(255, 255, 255);&quot;&gt;&lt;font style=&quot;font-size: 12px;&quot; face=&quot;Helvetica&quot;&gt;СМС-шлюз телеком-оператора&lt;/font&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="647" y="-150" width="140" height="70" as="geometry" />
+          <mxGeometry x="640" y="-160" width="140" height="70" as="geometry" />
         </mxCell>
         <mxCell id="Ri2J7wYNxYh_2fHASqyy-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="Ri2J7wYNxYh_2fHASqyy-12" target="Ri2J7wYNxYh_2fHASqyy-11" edge="1">
           <mxGeometry relative="1" as="geometry" />
@@ -189,6 +189,20 @@
         <mxCell id="hma6u4C72PWsmp-a3vY1-2" value="Принимают звонки" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" parent="hma6u4C72PWsmp-a3vY1-1" vertex="1" connectable="0">
           <mxGeometry x="0.2743" y="1" relative="1" as="geometry">
             <mxPoint x="9" y="-33" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="D5C_2vfEbHhb_XkOdB0H-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;jumpStyle=arc;" edge="1" parent="1" source="Ri2J7wYNxYh_2fHASqyy-7" target="Ri2J7wYNxYh_2fHASqyy-10">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="570" y="-529" />
+              <mxPoint x="570" y="-220" />
+              <mxPoint x="675" y="-220" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="D5C_2vfEbHhb_XkOdB0H-4" value="Оповещение через" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" vertex="1" connectable="0" parent="D5C_2vfEbHhb_XkOdB0H-3">
+          <mxGeometry x="-0.3973" y="-4" relative="1" as="geometry">
+            <mxPoint x="104" y="214" as="offset" />
           </mxGeometry>
         </mxCell>
       </root>
