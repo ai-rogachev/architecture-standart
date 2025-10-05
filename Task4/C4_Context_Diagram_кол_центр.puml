@@ -1,0 +1,99 @@
+@startuml C4_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Контекстная диаграмма - MVP открытия депозитов онлайн (с интеграцией кол-центра)
+' Layout improvements
+skinparam componentStyle rectangle
+skinparam roundcorner 20
+skinparam nodesep 60
+skinparam ranksep 80
+
+Person(clients, "Клиенты", "Пользователи банка, подающие заявки на депозиты")
+
+System_Boundary(bank, "Банк Стандарт") {
+    System_Boundary(client_channels, "Клиентские каналы") {
+        System(internet_bank, "Интернет-банк", "ASP.NET MVC 4.5, платформа подрядчика, MS SQL")
+        System(site, "Сайт", "PHP + React.js, собственная разработка банка")
+    }
+
+    System_Boundary(new_services, "Новые сервисы MVP") {
+        System(application_service, "Сервис заявок", "Java Spring Boot, PostgreSQL - обработка заявок на депозиты")
+        System(rate_service, "Сервис ставок", "Java Spring Boot, PostgreSQL - управление ставками по депозитам")
+        System(file_transfer_service, "Сервис передачи файлов", "Java Spring Boot - генерация и передача файлов ставок")
+    }
+
+    System_Boundary(banking_systems, "Банковские системы") {
+        System(sms_gateway, "СМС-шлюз", "Поддерживается IT-отделом банка")
+        System(abs, "АБС", "Delphi + Oracle, десктопный клиент, PL-SQL процедуры")
+        System(sftp_server, "SFTP Сервер", "Безопасная передача файлов партнёру")
+    }
+
+    System_Boundary(office, "Отделение банка") {
+        Person(front_office_managers, "Менеджеры фронт-офиса", "Сотрудники отделений банка")
+    }
+    
+    System_Boundary(back_office, "Бэк-офис") {
+        Person(back_office_managers, "Менеджеры бэк-офиса", "Сотрудники бэк-офиса")
+    }
+
+    System_Boundary(call_center, "Кол-центр") {
+        Person(cc_operators, "Сотрудники кол-центра", "200 операторов")
+        System(cc_system, "Система кол-центра", "Java Spring Boot, платформа подрядчика, PostgreSQL - маршрутизация звонков и консультирование")
+    }
+}
+
+System_Ext(telecom_operator, "Телеком-оператор", "Внешний оператор связи")
+System_Ext(partner_cc, "Партнёрский кол-центр", "Внешняя система кол-центра - резервный канал при перегрузке")
+System_Ext(partner_cc_operators, "Сотрудники партнёрского кол-центра", "Операторы партнёрского кол-центра")
+
+' === РАСПОЛОЖЕНИЕ ОБЪЕКТОВ ===
+Lay_R(clients, site)
+Lay_R(site, internet_bank)
+Lay_D(rate_service, application_service)
+Lay_D(application_service, file_transfer_service)
+Lay_R(cc_system, partner_cc)
+
+' === КЛИЕНТСКИЕ ВЗАИМОДЕЙСТВИЯ ===
+Rel(clients, site, "Просматривает депозиты, подает заявку", "HTTPS")
+Rel(clients, internet_bank, "Просматривает депозиты, подает заявку, подтверждает СМС", "HTTPS")
+Rel(clients, front_office_managers, "Приходит в отделение для проверки документов", "Личный контакт")
+Rel(clients, cc_system, "Звонит с вопросами о ставках", "Телефон")
+
+' === ИНТЕГРАЦИИ КЛИЕНТСКИХ КАНАЛОВ ===
+Rel(site, rate_service, "Получает ставки", "HTTPS/REST")
+Rel(site, cc_system, "Передает заявку", "HTTPS/REST")
+Rel(internet_bank, rate_service, "Получает ставки и персонализированные ставки", "HTTPS/REST")
+Rel(internet_bank, application_service, "Создает заявку", "HTTPS/REST")
+
+' === ИНТЕГРАЦИИ СИСТЕМЫ СТАВОК ===
+Rel(back_office_managers, abs, "Управление ставками", "HTTPS/REST")
+Rel(rate_service, abs, "Синхронизация ставок", "HTTPS/REST")
+Rel(rate_service, cc_system, "Предоставляет актуальные ставки", "HTTPS/REST")
+Rel(rate_service, file_transfer_service, "Уведомляет об изменениях ставок", "Event")
+
+' === ИНТЕГРАЦИИ СИСТЕМЫ ЗАЯВОК ===
+Rel(application_service, abs, "Передача в АБС (через буфер)", "Queue")
+Rel(cc_system, application_service, "Создает заявку", "HTTPS/REST")
+Rel(front_office_managers, application_service, "Составляет заявку на депозит", "HTTPS/REST")
+
+' === ИНТЕГРАЦИИ КОЛ-ЦЕНТРА ===
+Rel(cc_operators, cc_system, "Обработка заявок и консультирование", "Web Interface")
+Rel(cc_system, partner_cc, "Перенаправляет звонки при перегрузке", "API")
+Rel(partner_cc, partner_cc_operators, "Предоставляет ставки для консультирования", "Web Interface")
+
+' === ИНТЕГРАЦИИ ПЕРЕДАЧИ ФАЙЛОВ ===
+Rel(file_transfer_service, rate_service, "Получает данные о ставках", "HTTPS/REST")
+Rel(file_transfer_service, sftp_server, "Передает файлы ставок", "SFTP")
+Rel(sftp_server, partner_cc, "Доставляет файлы ставок", "SFTP")
+
+' === ИНТЕГРАЦИИ АБС ===
+Rel(abs, back_office_managers, "Обработка заявок", "Desktop Client")
+Rel(abs, front_office_managers, "Работа в отделениях", "Desktop Client")
+Rel(abs, sms_gateway, "СМС-уведомления", "HTTPS/REST")
+
+' === ВНЕШНИЕ ИНТЕГРАЦИИ ===
+Rel(sms_gateway, telecom_operator, "Отправка СМС", "HTTPS/REST")
+
+@enduml
