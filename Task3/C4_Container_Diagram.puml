@@ -1,0 +1,95 @@
+@startuml C4_Container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Контейнерная диаграмма - MVP открытия депозитов онлайн
+
+Person(clients, "Клиенты", "Пользователи банка")
+
+System_Boundary(bank, "Банк Стандарт") {
+    Person(back_office_managers, "Менеджеры бэк-офиса", "Сотрудники бэк-офиса")
+    Person(front_office_managers, "Менеджеры фронт-офиса", "Сотрудники отделений банка")
+    Person(cc_operators, "Сотрудники кол-центра", "200 операторов")
+
+    System_Boundary(client_channels, "Клиентские каналы") {
+        Container(site_web, "Сайт Web", "PHP + React.js", "Собственная разработка банка")
+        Container(site_api, "Сайт API", "PHP", "REST API для сайта")
+        
+        Container(ib_web, "Интернет-банк Web", "ASP.NET MVC 4.5", "Платформа подрядчика, .NET Framework 4.5")
+        Container(ib_api, "Интернет-банк API", "ASP.NET MVC 4.5", "Монолит на платформе подрядчика")
+        ContainerDb(ib_db, "Интернет-банк БД", "MS SQL Server", "СУБД интернет-банка")
+    }
+    
+    System_Boundary(new_services, "Новые сервисы MVP") {
+        Container(rate_service, "Rate Service", "Java Spring Boot", "Управление ставками по депозитам")
+        ContainerDb(rate_db, "Rate Database", "PostgreSQL", "Хранение ставок по депозитам")
+        
+        Container(application_service, "Application Service", "Java Spring Boot", "Обработка заявок на депозиты")
+        ContainerDb(application_db, "Application Database", "PostgreSQL", "Хранение заявок")
+        Container(application_queue, "Application Queue", "MSMQ/RabbitMQ", "Очередь заявок для АБС")
+        
+        Container(rate_ui, "Rate Management UI", "React.js + Java Spring Boot", "UI для управления ставками")
+    }
+    
+    System_Boundary(banking_systems, "Банковские системы") {
+        Container(abs_core, "АБС Core", "Delphi + Oracle", "Десктопный клиент на Delphi, процедуры PL-SQL")
+        ContainerDb(abs_db, "Oracle Database", "Oracle", "Основная логика на PL-SQL, разработка внутри банка")
+        
+        Container(sms_gateway, "SMS Gateway", "Не указано", "Поддерживается IT-отделом банка")
+    }
+    
+    System_Boundary(call_center, "Кол-центр") {
+        Container(cc_system, "Система кол-центра", "Java Spring Boot", "Платформа подрядчика, микросервисная архитектура")
+        ContainerDb(cc_db, "PostgreSQL", "PostgreSQL", "База данных кол-центра")
+    }
+}
+
+System_Ext(telecom_operator, "Телеком-оператор", "Внешний оператор связи")
+System_Ext(partner_cc, "Партнёрский кол-центр", "Внешняя система кол-центра")
+
+' Клиентские взаимодействия
+Rel(clients, site_web, "Просматривает депозиты, подает заявку", "HTTPS")
+Rel(clients, ib_web, "Просматривает депозиты, подает заявку, подтверждает СМС", "HTTPS")
+Rel(clients, front_office_managers, "Приходит в отделение для проверки документов", "Личный контакт")
+
+' Внутренние взаимодействия клиентских каналов
+Rel(site_web, site_api, "API вызовы", "HTTPS/REST")
+Rel(ib_web, ib_api, "API вызовы", "HTTPS/REST")
+Rel(ib_api, ib_db, "Чтение/запись данных", "SQL")
+
+' Интеграции сервиса ставок
+Rel(site_api, rate_service, "Получение ставок", "HTTPS/REST")
+Rel(ib_api, rate_service, "Получение ставок и персонализированных ставок", "HTTPS/REST")
+Rel(rate_service, rate_db, "Чтение/запись ставок", "SQL")
+Rel(rate_service, abs_core, "Синхронизация ставок", "HTTPS/REST")
+
+' Интеграции сервиса заявок
+Rel(ib_api, application_service, "Создание заявки", "HTTPS/REST")
+Rel(application_service, application_db, "Чтение/запись заявок", "SQL")
+Rel(application_service, application_queue, "Отправка заявок в очередь", "Queue Message")
+
+' Интеграции с АБС (через буфер)
+Rel(application_queue, abs_core, "Пакетная обработка заявок", "Batch Processing")
+Rel(abs_core, abs_db, "Чтение/запись данных", "SQL")
+
+' Интеграции кол-центра
+Rel(site_api, cc_system, "Передача заявки", "HTTPS/REST")
+Rel(cc_operators, cc_system, "Обработка заявок", "Web Interface")
+Rel(cc_system, application_service, "Создает заявку", "HTTPS/REST")
+Rel(cc_system, cc_db, "Чтение/запись данных", "SQL")
+Rel(cc_system, partner_cc, "Использует", "HTTPS/REST")
+
+' Интеграции СМС
+Rel(abs_core, sms_gateway, "СМС-уведомления", "HTTPS/REST")
+Rel(sms_gateway, telecom_operator, "Отправка СМС", "HTTPS/REST")
+
+' Интеграции бэк-офиса
+Rel(back_office_managers, abs_core, "Управление ставками", "Desktop Client")
+Rel(back_office_managers, abs_core, "Обработка заявок", "Desktop Client")
+
+' Интеграции фронт-офиса
+Rel(front_office_managers, abs_core, "Работа в отделениях", "Desktop Client")
+Rel(front_office_managers, application_service, "Составляет заявку на депозит", "HTTPS/REST")
+
+@enduml
