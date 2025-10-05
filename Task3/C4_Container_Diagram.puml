@@ -6,11 +6,12 @@ LAYOUT_WITH_LEGEND()
 title Контейнерная диаграмма - MVP открытия депозитов онлайн
 
 Person(clients, "Клиенты", "Пользователи банка")
-Person(back_office_managers, "Менеджеры бэк-офиса", "Сотрудники бэк-офиса")
-Person(front_office_managers, "Менеджеры фронт-офиса", "Сотрудники отделений банка")
-Person(cc_operators, "Сотрудники кол-центра", "200 операторов")
 
 System_Boundary(bank, "Банк Стандарт") {
+    Person(back_office_managers, "Менеджеры бэк-офиса", "Сотрудники бэк-офиса")
+    Person(front_office_managers, "Менеджеры фронт-офиса", "Сотрудники отделений банка")
+    Person(cc_operators, "Сотрудники кол-центра", "200 операторов")
+
     System_Boundary(client_channels, "Клиентские каналы") {
         Container(site_web, "Сайт Web", "PHP + React.js", "Собственная разработка банка")
         Container(site_api, "Сайт API", "PHP", "REST API для сайта")
