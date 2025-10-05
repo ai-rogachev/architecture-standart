@@ -6,12 +6,13 @@ LAYOUT_WITH_LEGEND()
 title Контейнерная диаграмма - MVP открытия депозитов онлайн (с интеграцией кол-центра)
 
 Person(clients, "Клиенты", "Пользователи банка")
-Person(back_office_managers, "Менеджеры бэк-офиса", "Сотрудники бэк-офиса")
-Person(front_office_managers, "Менеджеры фронт-офиса", "Сотрудники отделений банка")
-Person(cc_operators, "Сотрудники кол-центра", "200 операторов")
 Person(partner_cc_operators, "Сотрудники партнёрского кол-центра", "Операторы партнёра")
 
 System_Boundary(bank, "Банк Стандарт") {
+    Person(back_office_managers, "Менеджеры бэк-офиса", "Сотрудники бэк-офиса")
+    Person(front_office_managers, "Менеджеры фронт-офиса", "Сотрудники отделений банка")
+    Person(cc_operators, "Сотрудники кол-центра", "200 операторов")
+
     System_Boundary(client_channels, "Клиентские каналы") {
         Container(site_web, "Сайт Web", "PHP + React.js", "Собственная разработка банка")
         Container(site_api, "Сайт API", "PHP", "REST API для сайта")
@@ -32,8 +33,6 @@ System_Boundary(bank, "Банк Стандарт") {
         Container(file_transfer_service, "File Transfer Service", "Java Spring Boot", "Генерация и передача файлов ставок")
         ContainerDb(file_storage, "File Storage", "PostgreSQL", "Временное хранение файлов ставок")
         
-        Container(call_routing_service, "Call Routing Service", "Java Spring Boot", "Маршрутизация звонков между кол-центрами")
-        ContainerDb(routing_db, "Routing Database", "PostgreSQL", "Конфигурация маршрутизации")
         
         Container(rate_ui, "Rate Management UI", "React.js + Java Spring Boot", "UI для управления ставками")
         Container(rate_api_gateway, "Rate API Gateway", "Java Spring Boot", "API-шлюз с кэшированием и rate limiting")
@@ -48,8 +47,8 @@ System_Boundary(bank, "Банк Стандарт") {
     }
     
     System_Boundary(call_center, "Кол-центр") {
-        Container(cc_system, "Система кол-центра", "Java Spring Boot", "Платформа подрядчика, микросервисная архитектура")
-        ContainerDb(cc_db, "PostgreSQL", "PostgreSQL", "База данных кол-центра")
+        Container(cc_system, "Система кол-центра", "Java Spring Boot", "Платформа подрядчика, маршрутизация звонков и консультирование")
+        ContainerDb(cc_db, "PostgreSQL", "PostgreSQL", "База данных кол-центра и конфигурация маршрутизации")
         Container(cc_ui, "Кол-центр UI", "React.js", "Интерфейс для операторов кол-центра")
     }
 }
@@ -63,8 +62,7 @@ Rel(clients, ib_web, "Просматривает депозиты, подает 
 Rel(clients, front_office_managers, "Приходит в отделение для проверки документов", "Личный контакт")
 
 ' Новые взаимодействия клиентов с кол-центром
-Rel(clients, cc_operators, "Звонит с вопросами о ставках", "Телефон")
-Rel(clients, partner_cc_operators, "Звонит с вопросами о ставках", "Телефон")
+Rel(clients, cc_system, "Звонит с вопросами о ставках", "Телефон")
 
 ' Внутренние взаимодействия клиентских каналов
 Rel(site_web, site_api, "API вызовы", "HTTPS/REST")
@@ -96,7 +94,6 @@ Rel(cc_system, application_service, "Создает заявку", "HTTPS/REST")
 
 ' Новые интеграции кол-центра с системой ставок
 Rel(cc_system, rate_api_gateway, "Получение актуальных ставок", "HTTPS/REST")
-Rel(cc_system, call_routing_service, "Маршрутизация звонков", "HTTPS/REST")
 
 ' Интеграции сервиса передачи файлов
 Rel(file_transfer_service, rate_service, "Получение данных о ставках", "HTTPS/REST")
@@ -104,12 +101,11 @@ Rel(file_transfer_service, file_storage, "Временное хранение ф
 Rel(file_transfer_service, sftp_server, "Передача файлов ставок", "SFTP")
 Rel(sftp_server, partner_cc, "Доставка файлов ставок", "SFTP")
 
-' Интеграции сервиса маршрутизации
-Rel(call_routing_service, routing_db, "Конфигурация маршрутизации", "SQL")
-Rel(call_routing_service, partner_cc, "Перенаправление звонков", "API")
+' Интеграции маршрутизации звонков (встроена в систему кол-центра)
+Rel(cc_system, partner_cc, "Перенаправление звонков при перегрузке", "API")
 
 ' Интеграции партнёрского кол-центра
-Rel(partner_cc, partner_cc_operators, "Предоставляет ставки для консультирования", "Web Interface")
+Rel(partner_cc, partner_cc_operators, "Маршрутизация звонков к операторам партнёра", "Internal Routing")
 
 ' Интеграции СМС
 Rel(abs_core, sms_gateway, "СМС-уведомления", "HTTPS/REST")
@@ -119,6 +115,7 @@ Rel(sms_gateway, telecom_operator, "Отправка СМС", "HTTPS/REST")
 Rel(back_office_managers, abs_core, "Управление ставками", "Desktop Client")
 Rel(back_office_managers, abs_core, "Обработка заявок", "Desktop Client")
 Rel(back_office_managers, rate_ui, "Управление ставками", "Web Interface")
+Rel(rate_ui, rate_service, "Получение и обновление ставок", "HTTPS/REST")
 
 ' Интеграции фронт-офиса
 Rel(front_office_managers, abs_core, "Работа в отделениях", "Desktop Client")

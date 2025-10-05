@@ -9,7 +9,6 @@ skinparam componentStyle rectangle
 skinparam roundcorner 20
 skinparam nodesep 60
 skinparam ranksep 80
-' skinparam linetype ortho
 
 Person(clients, "Клиенты", "Пользователи банка, подающие заявки на депозиты")
 
@@ -61,7 +60,6 @@ Rel(clients, site, "Просматривает депозиты, подает з
 Rel(clients, internet_bank, "Просматривает депозиты, подает заявку, подтверждает СМС", "HTTPS")
 Rel(clients, front_office_managers, "Приходит в отделение для проверки документов", "Личный контакт")
 Rel(clients, cc_system, "Звонит с вопросами о ставках", "Телефон")
-Rel(clients, partner_cc, "Звонит с вопросами о ставках (при перегрузке)", "Телефон")
 
 ' === ИНТЕГРАЦИИ КЛИЕНТСКИХ КАНАЛОВ ===
 Rel(site, rate_service, "Получает ставки", "HTTPS/REST")
